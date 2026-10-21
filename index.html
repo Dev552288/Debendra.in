@@ -11,8 +11,8 @@
     rel="stylesheet">
   <style>
     :root {
-      --bg: #12141a;
-      --deep: #0b0d11;
+      --bg: #0a0c11;
+      --deep: #06080b;
       --panel: #1a1d24;
       --panel2: #262b34;
       --line: #2e333d;
@@ -29,19 +29,35 @@
       padding-bottom: env(safe-area-inset-bottom, 0px)
     }
 
-    @media (prefers-color-scheme:light) {
-      :root:not([data-theme="dark"]) {
-        --bg: #f6f4ef;
-        --deep: #ebe7dd;
-        --panel: #fff;
-        --panel2: #efebe1;
-        --line: #ddd7c8;
-        --gold: #9a7424;
-        --gold2: #7d5d17;
-        --green: #1f9d57;
-        --text: #1c1d22;
-        --dim: #5d6270
-      }
+    html {
+      color-scheme: dark
+    }
+
+    #pc {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none
+    }
+
+    .sb,
+    .edu,
+    .dv,
+    .id,
+    .term {
+      transition: .3s
+    }
+
+    .sb:hover,
+    .edu:hover,
+    .id:hover,
+    .term:hover {
+      border-color: var(--gold);
+      box-shadow: 0 0 34px -10px rgba(212, 175, 106, .5)
+    }
+
+    .dv:hover {
+      box-shadow: 0 0 22px -6px rgba(212, 175, 106, .55)
     }
 
     * {
@@ -1050,7 +1066,7 @@
 </head>
 
 <body>
-  <div class="bgfx"></div>
+  <div class="bgfx"></div><canvas id="pc"></canvas>
   <div id="glow"></div>
   <div id="prog"></div>
   <nav>
@@ -1245,6 +1261,20 @@
     fr.addEventListener('mouseenter', function () { fr.classList.add('paused'); clearTimeout(tm) });
     fr.addEventListener('mouseleave', function () { fr.classList.remove('paused'); show(cur) });
     show(0);
+
+    /* dark particle network */
+    var pc = document.getElementById('pc'), cx = pc.getContext('2d'), W, H, pts = [];
+    function rs() { W = pc.width = innerWidth; H = pc.height = innerHeight } rs(); addEventListener('resize', rs);
+    if (!matchMedia('(prefers-reduced-motion:reduce)').matches) {
+      for (var i = 0; i < 60; i++)pts.push({ x: Math.random() * W, y: Math.random() * H, vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4 });
+      (function f() {
+        cx.clearRect(0, 0, W, H); pts.forEach(function (p, i) {
+          p.x += p.vx; p.y += p.vy; if (p.x < 0 || p.x > W) p.vx *= -1; if (p.y < 0 || p.y > H) p.vy *= -1;
+          cx.fillStyle = 'rgba(212,175,106,.75)'; cx.beginPath(); cx.arc(p.x, p.y, 1.6, 0, 6.3); cx.fill();
+          for (var j = i + 1; j < pts.length; j++) { var q = pts[j], d = Math.hypot(p.x - q.x, p.y - q.y); if (d < 130) { cx.strokeStyle = 'rgba(212,175,106,' + (.2 * (1 - d / 130)) + ')'; cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(q.x, q.y); cx.stroke() } }
+        }); requestAnimationFrame(f)
+      })()
+    }
 
     /* role typing */
     var R = ['Kotlin · Jetpack Compose', 'mATM & POS Systems', 'EMV Chip-and-PIN', 'PCI DSS Secure Payments'], ri = 0, ci = 0, del = 0, te = document.getElementById('typed');
